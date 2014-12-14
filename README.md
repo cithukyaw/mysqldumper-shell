@@ -2,13 +2,10 @@
 
 The simple and quick MySQL database backup program through CLI or Bash. It dumps all databases into a directory specified. It exports `.sql` file for each database with the file name format of `<db_name>_<YYYYMMDD>.sql`
 
-## Instruction
+## Instruction (Windows)
 
-Extract the archive download in a folder. Let's say you have `D:\mysqldumper-shell\mysqldumper.bat`,
-
-- In CLI, change the directory to where `mysqldumper.bat` exists
-- Type and run `mysqldumper`.
-
+Extract the archive download in a folder. Let's say you have `D:\mysqldumper-shell\mysqldumper.bat`.
+In CLI, change the directory to where `mysqldumper.bat` exists. Then, type and run `mysqldumper`.  
 
     D:\mysqldumper-shell> mysqldumper
 
