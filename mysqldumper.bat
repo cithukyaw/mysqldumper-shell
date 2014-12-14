@@ -58,11 +58,6 @@ SET tmpFile=%TEMP%\mysqldbs.tmp
 	)
 	SET today=%timestamp:~0,4%%timestamp:~4,2%%timestamp:~6,2%
 	SET time24=%timestamp:~8,2%%timestamp:~10,2%%timestamp:~12,2%
-	REM echo %timestamp%
-	REM echo %today%
-	REM echo %time24%
-	REM echo %backupDir%\%dbName%_%today%.sql
-	REM GOTO done
 
 	:: check the backup directory
 	IF NOT EXIST %backupDir% (
