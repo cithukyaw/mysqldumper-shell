@@ -19,12 +19,24 @@ SET mysqlLogin=%UserProfile%\mysqldumper.cnf
 :: The directory where you want to save your sql files
 :: It will be created if it does not exist
 SET backupDir=%UserProfile%\.mysqlbackup
-:: The database name to be dumped; if it is not provided, all databases will be dumped into separate files
-SET dbName=%1
 :: The system databases which don't need to be dumped
-SET dbsIgnored=information_schema cdcol mysql performance_schema phpmyadmin test webauth
+SET dbsIgnored=information_schema,cdcol,mysql,performance_schema,phpmyadmin,test,webauth,
 :: Temp file
 SET tmpFile=%TEMP%\mysqldbs.tmp
+
+SET paramName=
+SET dbs=
+:argLoopStart
+	SET arg=%1
+	IF -!arg!-==-- GOTO argLoopEnd
+	IF %arg:~0,2%==-- (
+		SET paramName=!arg!
+	) ELSE (
+		IF "!paramName!" == "--dbs" ( SET dbs=!dbs!%arg% )
+	)
+	SHIFT
+	GOTO argLoopStart
+:argLoopEnd
 
 :errorHandling
 	IF NOT EXIST %mysqlLogin% ( GOTO errConfig )
@@ -66,40 +78,38 @@ SET tmpFile=%TEMP%\mysqldbs.tmp
 	)
 
 	:: Change to mysql dir
-	CD %mysqlDir%
+	CD !mysqlDir!
 
-	IF "%1"=="" ( SET dbName=all )
-	IF %dbName%==all ( GOTO alldump )
+	IF "!dbs!"=="" (
+		REM Get all databases name into a temp file
+		REM If the server was started with the --skip-show-database option,
+		REM you cannot use this statement at all unless you have the SHOW DATABASES privilege.
+		mysql --defaults-extra-file=!mysqlLogin! -e "SHOW DATABASES" > "!tmpFile!"
 
-	:: dump a single database
-	ECHO Dumping %dbName% ...
-	mysqldump --defaults-extra-file=%mysqlLogin% --quick --opt --add-drop-database --databases %dbName% > %backupDir%\%dbName%_%today%.sql
-	ECHO Exported %backupDir%\%%L_%today%.sql
-	GOTO done
-
-	:alldump
-		:: Replace the spaces with ',', single quote preceded and appended
-		SET dbsIgnoredCond='%dbsIgnored: =','%'
-		:: Get all databases name into a temp file
-		:: If the server was started with the `--skip-show-database` option,
-		:: you cannot use this statement at all unless you have the `SHOW DATABASES` privilege.
-		mysql --defaults-extra-file=%mysqlLogin% -e "SHOW DATABASES WHERE `Database` NOT IN (%dbsIgnoredCond%)" > "%tmpFile%"
-
-		FOR /F "delims=\ tokens=* skip=1" %%L IN (%tmpFile%) DO (
-			ECHO Dumping %%L ...
-			mysqldump --defaults-extra-file=%mysqlLogin% --quick --opt --add-drop-database --databases %%L > %backupDir%\%%L_%today%.sql
-			ECHO Exported %backupDir%\%%L_%today%.sql
+		REM Process all database names in the file
+		FOR /F "delims=\ tokens=* skip=1" %%L IN (!tmpFile!) DO (
+			REM Skip if the database is in the ignored list
+			IF "!dbsIgnored:%%L,=!" EQU "!dbsIgnored!" (
+				ECHO Dumping %%L ...
+				mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --databases %%L > !backupDir!\%%L_!today!.sql
+				ECHO Exported !backupDir!\%%L_!today!.sql
+			)
 		)
-
-		GOTO done
+	) ELSE (
+		:: Dumping the given databases only
+		FOR %%L IN (!dbs!) DO (
+			ECHO Dumping %%L ...
+			mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --databases %%L > !backupDir!\%%L_!today!.sql
+			ECHO Exported !backupDir!\%%L_!today!.sql
+		)
+	)
 
 	:done
-		ECHO Done.
+		ECHO Done^^!
 
 	:end
 		:: Delete the temporary file
-		IF EXIST %tmpFile% ( DEL %tmpFile% )
+		IF EXIST !tmpFile! ( DEL !tmpFile! )
 		:: Go back to the original directory to the script
 		CD %~dp0
-
 ENDLOCAL
