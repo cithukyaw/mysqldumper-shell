@@ -1,29 +1,30 @@
 @ECHO off
 SETLOCAL EnableDelayedExpansion
 
-:: Set variables
-:: path to your mysql.exe installation path
+REM Set variables
+REM path to your mysql.exe installation path
 SET mysqlDir=D:\xampp\mysql\bin
-:: Store mysql login information in a file e.g., c:\users\[username]\mysqldumper.cnf with your mysql information
-::
-::    [client]
-::    host=your_host
-::    user=your_username
-::    password=your_password
-::
-:: To keep the password safe, the file should not be accessible to anyone but yourself.
-:: To ensure this, set the file access mode to 400 or 600, e.g., chmod 600 [the-file]
-:: @see http://dev.mysql.com/doc/refman/5.5/en/password-security-user.html
-:: Set the fully qualified path name to the file here
+REM Store mysql login information in a file e.g., c:\users\[username]\mysqldumper.cnf with your mysql information
+REM
+REM    [client]
+REM    host=your_host
+REM    user=your_username
+REM    password=your_password
+REM
+REM To keep the password safe, the file should not be accessible to anyone but yourself.
+REM To ensure this, set the file access mode to 400 or 600, e.g., chmod 600 [the-file]
+REM @see http://dev.mysql.com/doc/refman/5.5/en/password-security-user.html
+REM Set the fully qualified path name to the file here
 SET mysqlLogin=%UserProfile%\mysqldumper.cnf
-:: The directory where you want to save your sql files
-:: It will be created if it does not exist
+REM The directory where you want to save your sql files
+REM It will be created if it does not exist
 SET backupDir=%UserProfile%\.mysqlbackup
-:: The system databases which don't need to be dumped
+REM The system databases which don't need to be dumped
 SET dbsIgnored=information_schema,cdcol,mysql,performance_schema,phpmyadmin,test,webauth,
-:: Temp file
+REM Temp file
 SET tmpFile=%TEMP%\mysqldbs.tmp
 
+REM Argument capturing
 SET paramName=
 SET dbs=
 :argLoopStart
@@ -64,20 +65,20 @@ SET dbs=
 	GOTO end
 	
 :main
-	:: Get the current Date and Time in a locale-agnostic way
+	REM Get the current Date and Time in a locale-agnostic way
 	FOR /f "skip=1" %%x IN ('wmic os get localdatetime') DO (
 		IF NOT DEFINED timestamp SET timestamp=%%x
 	)
 	SET today=%timestamp:~0,4%%timestamp:~4,2%%timestamp:~6,2%
 	SET time24=%timestamp:~8,2%%timestamp:~10,2%%timestamp:~12,2%
 
-	:: check the backup directory
+	REM check the backup directory
 	IF NOT EXIST %backupDir% (
 		MD %backupDir%
 		ECHO %backupDir% is created.
 	)
 
-	:: Change to mysql dir
+	REM Change to mysql dir
 	CD !mysqlDir!
 
 	IF "!dbs!"=="" (
@@ -96,7 +97,7 @@ SET dbs=
 			)
 		)
 	) ELSE (
-		:: Dumping the given databases only
+		REM Dumping the given databases only
 		FOR %%L IN (!dbs!) DO (
 			ECHO Dumping %%L ...
 			mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --databases %%L > !backupDir!\%%L_!today!.sql
@@ -108,8 +109,8 @@ SET dbs=
 		ECHO Done^^!
 
 	:end
-		:: Delete the temporary file
+		REM Delete the temporary file
 		IF EXIST !tmpFile! ( DEL !tmpFile! )
-		:: Go back to the original directory to the script
+		REM Go back to the original directory to the script
 		CD %~dp0
 ENDLOCAL
