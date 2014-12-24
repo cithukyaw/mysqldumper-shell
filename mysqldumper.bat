@@ -30,10 +30,17 @@ SET dbs=
 :argLoopStart
 	SET arg=%1
 	IF -!arg!-==-- GOTO argLoopEnd
+	REM long parameter name such as --argument
 	IF %arg:~0,2%==-- (
 		SET paramName=!arg!
 	) ELSE (
 		IF "!paramName!" == "--dbs" ( SET dbs=!dbs!%arg% )
+	)
+	REM short parmeter name such as -a
+	IF %arg:~0,1%==- (
+		SET paramName=!arg!
+	) ELSE (
+		IF "!paramName!" == "-d" ( SET dbs=!dbs!%arg% )
 	)
 	SHIFT
 	GOTO argLoopStart
