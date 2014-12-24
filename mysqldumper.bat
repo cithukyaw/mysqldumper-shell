@@ -46,7 +46,7 @@ SET dbs=
 
 :errConfig
 	ECHO ERROR^^! at line 18 in mysqldumper.bat
-	ECHO Configuration needed. Store mysql login information in a file 
+	ECHO Configuration needed. Store mysql login information in a file
 	ECHO e.g., %UserProfile%\mysqldumper.cnf with your mysql information
 	ECHO\
 	ECHO    [client]
@@ -63,7 +63,7 @@ SET dbs=
 	ECHO ERROR^^! at line 6 in mysqldumper.bat
 	ECHO Set the directory path where your mysql.exe was installed
 	GOTO end
-	
+
 :main
 	REM Get the current Date and Time in a locale-agnostic way
 	FOR /f "skip=1" %%x IN ('wmic os get localdatetime') DO (
