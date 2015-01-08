@@ -1,3 +1,17 @@
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::
+:: The simple and quick MySQL database backup batch script.
+:: It dumps all databases into a directory specified. It exports .sql file
+:: for each database with the file name format of <db_name>_<YYYYMMDD>.sql
+::
+:: Licensed under The MIT License
+:: For full copyright and license information, please see LICENSE
+::
+:: @author     Sithu Kyaw <hello@sithukyaw.com>
+:: @license    http://www.opensource.org/licenses/mit-license.php MIT License
+::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 @ECHO off
 SETLOCAL EnableDelayedExpansion
 
