@@ -18,7 +18,7 @@ SETLOCAL EnableDelayedExpansion
 REM Set variables
 REM path to your mysql.exe installation path
 SET mysqlDir=D:\xampp\mysql\bin
-REM Store mysql login information in a file e.g., c:\users\[username]\mysqldumper.cnf with your mysql information
+REM Store mysql login information in a file e.g., C:\Users\[username]\.my.cnf with your mysql information
 REM
 REM    [client]
 REM    host=your_host
@@ -29,7 +29,7 @@ REM To keep the password safe, the file should not be accessible to anyone but y
 REM To ensure this, set the file access mode to 400 or 600, e.g., chmod 600 [the-file]
 REM @see http://dev.mysql.com/doc/refman/5.5/en/password-security-user.html
 REM Set the fully qualified path name to the file here
-SET mysqlLogin=%UserProfile%\mysqldumper.cnf
+SET mysqlLogin=%UserProfile%\.my.cnf
 REM The directory where you want to save your sql files
 REM It will be created if it does not exist
 SET backupDir=%UserProfile%\.mysqlbackup
@@ -66,22 +66,23 @@ SET dbs=
 	GOTO main
 
 :errConfig
-	ECHO ERROR^^! at line 18 in mysqldumper.bat
-	ECHO Configuration needed. Store mysql login information in a file
-	ECHO e.g., %UserProfile%\mysqldumper.cnf with your mysql information
-	ECHO\
+	(ECHO [client] & ECHO host=localhost & ECHO user=root & ECHO password=) > %mysqlLogin%
+	ECHO NOTICE^^! at line 32 in mysqldumper.bat
+	ECHO Configuration file %mysqlLogin% has been created.
+	ECHO Update your mysql login information in the file as below
+	ECHO.
 	ECHO    [client]
 	ECHO    host=your_host
 	ECHO    user=your_username
 	ECHO    password=your_password
-	ECHO\
+	ECHO.
 	ECHO To keep the password safe, the file should not be accessible to anyone but yourself.
 	ECHO To ensure this, set the file access mode to 400 or 600, e.g., chmod 600 [the-file]
 	ECHO @see http://dev.mysql.com/doc/refman/5.5/en/password-security-user.html
 	GOTO end
 
 :errDir
-	ECHO ERROR^^! at line 6 in mysqldumper.bat
+	ECHO ERROR^^! at line 20 in mysqldumper.bat
 	ECHO Set the directory path where your mysql.exe was installed
 	GOTO end
 
