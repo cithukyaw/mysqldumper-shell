@@ -1,6 +1,6 @@
 # MySQL Dumper Shell
 
-The simple and quick MySQL database backup program through terminal or command line. It dumps all databases into a directory specified. It exports `.sql` file for each database with the file name format of `<db_name>_<YYYYMMDD>.sql`.
+The simple and quick MySQL database backup program through terminal or command line using a single compact command. It dumps all databases into a directory specified. It exports `.sql` file for each database with the file name format of `<db_name>_<YYYYMMDD>.sql`. The script is available for both Linux and Windows.
 
 ## Usage
 
@@ -8,6 +8,8 @@ The simple and quick MySQL database backup program through terminal or command l
 
     Options:
      --dbs (-d)      Databases to be dumped, e.g., -d mydb1 mydb2
+
+If you omit the options, your MySQL user should have `SHOW DATABASES` privilege.
 
 # Instruction (Linux)
 
