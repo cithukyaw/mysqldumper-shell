@@ -46,7 +46,7 @@ If you want to run it globally without changing directory, you can put it in you
 * All dumped sql files will be stored in a directory of user profile, for example, `C:\Users\%Username%\.mysqlbackup`.
 
 # Author
-[Sithu K.](http://sithukyaw.com)
+[Sithu K.](http://www.phplucidframe.com/sithu)
 
 # License
 Released under the [MIT License](LICENSE).
