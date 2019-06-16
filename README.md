@@ -43,7 +43,7 @@ If you want to run it globally without changing directory, you can put it in you
 
 * Upon first usage, you will get a MySQL configuration notice and simply follow the instruction showing in the command line.
 * You may need to configure your path of `mysql.exe` location in the line 20 of the script.
-* All dumped sql files will be stored in a directory of user profile, for example, `C:\Users\%Username%\.mysqlbackup`.
+* All dumped sql files will be stored in a directory of user profile, for example, `C:\Users\%Username%\.mysqlbackup`. You can change path at line 35.
 
 # Author
 [Sithu K.](http://www.phplucidframe.com/sithu)

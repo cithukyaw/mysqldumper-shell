@@ -95,6 +95,8 @@ SET dbs=
 	SET today=%timestamp:~0,4%%timestamp:~4,2%%timestamp:~6,2%
 	SET time24=%timestamp:~8,2%%timestamp:~10,2%%timestamp:~12,2%
 
+	SET backupDir=%backupDir%\%today%
+
 	REM check the backup directory
 	IF NOT EXIST %backupDir% (
 		MD %backupDir%
