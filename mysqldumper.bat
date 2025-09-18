@@ -34,7 +34,7 @@ REM Set the fully qualified path name to the file here
 SET mysqlLogin="%UserProfile%\.my.cnf"
 REM The directory where you want to save your sql files
 REM It will be created if it does not exist
-SET backupDir="%UserProfile%\.mysqlbackup"
+SET backupDir=%UserProfile%\.mysqlbackup
 REM The system databases which don't need to be dumped
 REM Please make sure to include the trailing comma if you update this list
 SET dbsIgnored=information_schema,cdcol,mysql,performance_schema,phpmyadmin,test,webauth,
