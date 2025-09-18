@@ -19,7 +19,18 @@ If you omit the options, your MySQL user should have `SHOW DATABASES` privilege.
 Place the downloaded script file `mysqldumper` in a directory you like; let's say have `/var/local/mysqldumper-shell/mysqldumper`.
 
     $ cd /var/local/mysqldumper-shell
+
+    # export sql files for all dbs
     $ ./mysqldumper
+
+    # export sql files for the specific dbs only - mydb1 and mydb2
+    $ ./mysqldumper -d mydb1 mydb2
+
+    # export zip files for all dbs
+    $ ./mysqldumper -a
+
+    # export zip files for the specific dbs only - mydb1 and mydb2
+    $ ./mysqldumper -d mydb1 mydb2 -a
 
 You can alternatively [put it in your PATH](http://linuxcommand.org/wss0010.php#path) so that you could run it globally without changing directory.
 
@@ -36,7 +47,18 @@ Place the downloaded script file `mysqldumper.bat` in a directory you like; let'
 
     C:\Users\%Username%> cd\
     C:\> cd bin\mysqldumper-shell
-    C:\bin\mysqldumper-shell> mysqldumper.bat
+
+    # export sql files for all dbs
+    C:\bin\mysqldumper-shell> ./mysqldumper.bat
+
+    # export sql files for or the specific dbs only - mydb1 and mydb2
+    C:\bin\mysqldumper-shell> ./mysqldumper.bat -d mydb1 mydb2
+
+    # export zip files for all dbs
+    C:\bin\mysqldumper-shell> ./mysqldumper.bat -a
+
+    # export zip files for the specific dbs only - mydb1 and mydb2
+    C:\bin\mysqldumper-shell> ./mysqldumper.bat -d mydb1 mydb2 -a
 
 If you want to run it globally without changing directory, you can put it in your PATH using [GUI](http://www.computerhope.com/issues/ch000549.htm) or [command line](http://stackoverflow.com/a/9546345/1179841).
 
