@@ -136,9 +136,10 @@ dumpDatabase() {
 	fi
 }
 
-# Create the backup directory if not exists
+# Create the backup directory with today's date subfolder
+backupDir="$backupDir/$today"
 if [ ! -d $backupDir ]; then
-	mkdir $backupDir
+	mkdir -p $backupDir
 	echo "$backupDir is created."
 fi
 
