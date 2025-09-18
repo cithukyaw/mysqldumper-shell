@@ -105,7 +105,7 @@ SET archive=false
 	REM Function to dump a database and optionally archive it
 	REM Parameters: %1 = database name, %2 = today date, %3 = backup directory
 	ECHO Dumping %1 ...
-	mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --databases %1 > %3\%1_%2.sql
+	mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --single-transaction --no-tablespaces --databases %1 > %3\%1_%2.sql
 	ECHO ... Exported %3\%1_%2.sql
 	CALL :archiveFile %1 %2 %3
 	GOTO :EOF

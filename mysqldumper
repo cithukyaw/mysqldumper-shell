@@ -128,7 +128,7 @@ dumpDatabase() {
 	local canArchive=$4
 
 	echo "Dumping $dbname ..."
-	mysqldump --defaults-extra-file=$mysqlLogin --quick --opt --add-drop-database --databases $dbname > "${backupPath}/${dbname}_${date}.sql"
+	mysqldump --defaults-extra-file=$mysqlLogin --quick --opt --add-drop-database --single-transaction --no-tablespaces --databases $dbname > "${backupPath}/${dbname}_${date}.sql"
 	echo "... Exported ${backupPath}/${dbname}_${date}.sql"
 
 	if [ "$canArchive" == "true" ]; then
