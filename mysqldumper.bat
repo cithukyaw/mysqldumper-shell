@@ -1,16 +1,18 @@
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::
 :: The simple and quick MySQL database backup batch script.
 :: It dumps all databases into a directory specified. It exports .sql file
-:: for each database with the file name format of <db_name>_<YYYYMMDD>.sql
+:: for each database with the file name format of <db_name>_<YYYYMMDD>.sql by default.
+:: When the argument --archive or -a is provided, sql file will be archived
+:: into <db_name>_<YYYYMMDD>.zip.
 ::
 :: Licensed under The MIT License
 :: For full copyright and license information, please see LICENSE
 ::
-:: @author     Sithu Kyaw <hello@sithukyaw.com>
+:: @author     Sithu <hello@sithukyaw.com>
 :: @license    http://www.opensource.org/licenses/mit-license.php MIT License
 ::
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 @ECHO off
 SETLOCAL EnableDelayedExpansion
@@ -29,10 +31,10 @@ REM To keep the password safe, the file should not be accessible to anyone but y
 REM To ensure this, set the file access mode to 400 or 600, e.g., chmod 600 [the-file]
 REM @see http://dev.mysql.com/doc/refman/5.5/en/password-security-user.html
 REM Set the fully qualified path name to the file here
-SET mysqlLogin=%UserProfile%\.my.cnf
+SET mysqlLogin="%UserProfile%\.my.cnf"
 REM The directory where you want to save your sql files
 REM It will be created if it does not exist
-SET backupDir=%UserProfile%\.mysqlbackup
+SET backupDir="%UserProfile%\.mysqlbackup"
 REM The system databases which don't need to be dumped
 REM Please make sure to include the trailing comma if you update this list
 SET dbsIgnored=information_schema,cdcol,mysql,performance_schema,phpmyadmin,test,webauth,
@@ -42,21 +44,33 @@ SET tmpFile=%TEMP%\mysqldbs.tmp
 REM Argument capturing
 SET paramName=
 SET dbs=
+SET archive=false
 :argLoopStart
 	SET arg=%1
 	IF -!arg!-==-- GOTO argLoopEnd
-	REM long parameter name such as --argument
-	IF %arg:~0,2%==-- (
+
+	REM Check for long parameter names (--argument)
+	IF "!arg!" == "--archive" (
+		SET archive=true
+		SET paramName=
+	) ELSE IF "!arg!" == "--dbs" (
+		SET paramName=--dbs
+	) ELSE IF "!arg:~0,2!" == "--" (
+		SET paramName=!arg!
+	REM Check for short parameter names (-a)
+	) ELSE IF "!arg!" == "-a" (
+		SET archive=true
+		SET paramName=
+	) ELSE IF "!arg!" == "-d" (
+		SET paramName=-d
+	) ELSE IF "!arg:~0,1!" == "-" (
 		SET paramName=!arg!
 	) ELSE (
-		IF "!paramName!" == "--dbs" ( SET dbs=!dbs!%arg% )
+		REM This is a value for the previous parameter
+		IF "!paramName!" == "--dbs" ( SET dbs=!dbs! !arg! )
+		IF "!paramName!" == "-d" ( SET dbs=!dbs! !arg! )
 	)
-	REM short parmeter name such as -a
-	IF %arg:~0,1%==- (
-		SET paramName=!arg!
-	) ELSE (
-		IF "!paramName!" == "-d" ( SET dbs=!dbs!%arg% )
-	)
+
 	SHIFT
 	GOTO argLoopStart
 :argLoopEnd
@@ -68,7 +82,7 @@ SET dbs=
 
 :errConfig
 	(ECHO [client] & ECHO host=localhost & ECHO user=root & ECHO password=) > %mysqlLogin%
-	ECHO NOTICE^^! at line 32 in mysqldumper.bat
+	ECHO NOTICE^^! at line 34 in mysqldumper.bat
 	ECHO Configuration file %mysqlLogin% has been created.
 	ECHO Update your mysql login information in the file as below
 	ECHO.
@@ -83,9 +97,32 @@ SET dbs=
 	GOTO end
 
 :errDir
-	ECHO ERROR^^! at line 20 in mysqldumper.bat
+	ECHO ERROR^^! at line 22 in mysqldumper.bat
 	ECHO Set the directory path where your mysql.exe was installed
 	GOTO end
+
+:dumpDatabase
+	REM Function to dump a database and optionally archive it
+	REM Parameters: %1 = database name, %2 = today date, %3 = backup directory
+	ECHO Dumping %1 ...
+	mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --databases %1 > %3\%1_%2.sql
+	ECHO ... Exported %3\%1_%2.sql
+	CALL :archiveFile %1 %2 %3
+	GOTO :EOF
+
+:archiveFile
+	REM Function to archive a SQL file if archive flag is true
+	REM Parameters: %1 = database name, %2 = today date, %3 = backup directory
+	IF "!archive!" == "true" (
+		powershell -command "Compress-Archive -Path '%3\%1_%2.sql' -DestinationPath '%3\%1_%2.zip' -Force"
+		IF EXIST %3\%1_%2.zip (
+			DEL %3\%1_%2.sql
+			ECHO ... Archived to %3\%1_%2.zip
+		) ELSE (
+			ECHO ... Warning: Failed to create archive for %1_%2.sql
+		)
+	)
+	GOTO :EOF
 
 :main
 	REM Get the current Date and Time in a locale-agnostic way
@@ -116,17 +153,13 @@ SET dbs=
 		FOR /F "delims=\ tokens=* skip=1" %%L IN (!tmpFile!) DO (
 			REM Skip if the database is in the ignored list
 			IF "!dbsIgnored:%%L,=!" EQU "!dbsIgnored!" (
-				ECHO Dumping %%L ...
-				mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --databases %%L > !backupDir!\%%L_!today!.sql
-				ECHO Exported !backupDir!\%%L_!today!.sql
+				CALL :dumpDatabase %%L !today! !backupDir!
 			)
 		)
 	) ELSE (
 		REM Dumping the given databases only
 		FOR %%L IN (!dbs!) DO (
-			ECHO Dumping %%L ...
-			mysqldump --defaults-extra-file=!mysqlLogin! --quick --opt --add-drop-database --databases %%L > !backupDir!\%%L_!today!.sql
-			ECHO Exported !backupDir!\%%L_!today!.sql
+			CALL :dumpDatabase %%L !today! !backupDir!
 		)
 	)
 

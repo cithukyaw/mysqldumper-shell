@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-################################################################################
+######################################################################################
 #
 # The simple and quick MySQL database backup shell script.
 # It dumps all databases into a directory specified. It exports .sql file
-# for each database with the file name format of <db_name>_<YYYYMMDD>.sql
+# for each database with the file name format of <db_name>_<YYYYMMDD>.sql by default.
+# When the argument --archive or -a is provided, sql file will be archived
+# into <db_name>_<YYYYMMDD>.zip.
 #
 # Licensed under The MIT License
 # For full copyright and license information, please see LICENSE
 #
-# @author     Sithu Kyaw <hello@sithukyaw.com>
+# @author     Sithu <hello@sithukyaw.com>
 # @license    http://www.opensource.org/licenses/mit-license.php MIT License
 #
-################################################################################
+######################################################################################
 
 # Set variables
 # Store mysql login information in a file e.g., $HOME\.my.cnf with your mysql information
@@ -41,13 +43,14 @@ today=$(date '+%Y%m%d');
 # Argument capturing
 paramName=""
 dbs=""
+archive=false
 
 # Error handling
 # Check configuration for mysql login information
 if [ ! -f $mysqlLogin ]; then
 	echo -e "[client]\nhost=localhost\nuser=root\npassword=" > $mysqlLogin
 	echo -e "\n"
-	echo "NOTICE^^! at line 28 in mysqldumper"
+	echo "NOTICE^^! at line 30 in mysqldumper"
 	echo "Configuration file $mysqlLogin has been created."
 	echo "Update your mysql login information in the file as below:"
 	echo -e "\n"
@@ -67,14 +70,28 @@ fi
 for arg in "$@"; do
 	# long parameter name such as --argument
 	if [ ${arg:0:2} == "--" ]; then
-		paramName=$arg
+		if [ "$arg" == "--archive" ]; then
+			archive=true
+			paramName=""
+		elif [ "$arg" == "--dbs" ]; then
+			paramName=$arg
+		else
+			paramName=$arg
+		fi
 		continue
 	elif [ "$paramName" = "--dbs" ]; then
 		dbs="$dbs $arg"
 	fi
 	# short parameter name such as -a
 	if [ ${arg:0:1} == "-" ]; then
-		paramName=$arg
+		if [ "$arg" == "-a" ]; then
+			archive=true
+			paramName=""
+		elif [ "$arg" == "-d" ]; then
+			paramName=$arg
+		else
+			paramName=$arg
+		fi
 		continue
 	elif [ "$paramName" == "-d" ]; then
 		dbs="$dbs $arg"
@@ -85,6 +102,38 @@ done
 listContains() {
 	[[ $1 =~ $2 ]] && return 0
 	return 1
+}
+
+# Function to archive a SQL file
+archiveFile() {
+	local dbname=$1
+	local date=$2
+	local backupPath=$3
+
+	echo "... Archiving ${dbname}_${date}.sql ..."
+	zip -j "${backupPath}/${dbname}_${date}.zip" "${backupPath}/${dbname}_${date}.sql" > /dev/null 2>&1
+	if [ -f "${backupPath}/${dbname}_${date}.zip" ]; then
+		rm "${backupPath}/${dbname}_${date}.sql"
+		echo "... Archived to ${backupPath}/${dbname}_${date}.zip"
+	else
+		echo "... Warning: Failed to create archive for ${dbname}_${date}.sql"
+	fi
+}
+
+# Function to dump a database and optionally archive it
+dumpDatabase() {
+	local dbname=$1
+	local date=$2
+	local backupPath=$3
+	local canArchive=$4
+
+	echo "Dumping $dbname ..."
+	mysqldump --defaults-extra-file=$mysqlLogin --quick --opt --add-drop-database --databases $dbname > "${backupPath}/${dbname}_${date}.sql"
+	echo "... Exported ${backupPath}/${dbname}_${date}.sql"
+
+	if [ "$canArchive" == "true" ]; then
+		archiveFile $dbname $date $backupPath
+	fi
 }
 
 # Create the backup directory if not exists
@@ -113,12 +162,22 @@ else
 	databases=($dbs)
 fi
 
+# Check if archiving is requested and zip command is available
+canArchive=false
+if [ "$archive" == "true" ]; then
+	if command -v zip &> /dev/null; then
+		canArchive=true
+	else
+		echo "Warning: zip command not found. Archiving disabled for this session."
+		echo "Install zip package to enable archiving: sudo apt-get install zip (Ubuntu/Debian) or brew install zip (macOS)"
+		echo ""
+	fi
+fi
+
 # Export the databases in separate files
 count=1
 for dbname in ${databases[*]}; do
-	echo "Dumping $dbname ..."
-	mysqldump --defaults-extra-file=$mysqlLogin --quick --opt --add-drop-database --databases $dbname > "$backupDir/${dbname}_$today.sql"
-	echo "Exported $backupDir/${dbname}_$today.sql"
+	dumpDatabase $dbname $today $backupDir $canArchive
 	echo "##### $count of ${#databases[*]} completed."
 	count=$(( $count + 1 ))
 done

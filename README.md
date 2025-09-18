@@ -1,12 +1,15 @@
 # MySQL Dumper Shell
 
-The simple and quick MySQL database backup program through terminal or command line using a single compact command. It dumps all databases into a directory specified. It exports `.sql` file for each database with the file name format of `<db_name>_<YYYYMMDD>.sql`. The script is available for both Linux and Windows.
+The simple and quick MySQL database backup program through terminal or command line using a single compact command. It dumps all databases into a directory specified. The script is available for both Linux and Windows.
+
+It exports `.sql` file for each database with the file name format of `<db_name>_<YYYYMMDD>.sql` by default. When the argument `--archive` or `-a` is provided, sql file will be archived into `<db_name>_<YYYYMMDD>.zip`.
 
 ## Usage
 
     mysqldumper [options]
 
     Options:
+     --archive (-a)  Create zip file for the dump file
      --dbs (-d)      Databases to be dumped, e.g., -d mydb1 mydb2
 
 If you omit the options, your MySQL user should have `SHOW DATABASES` privilege.
@@ -46,7 +49,7 @@ If you want to run it globally without changing directory, you can put it in you
 * All dumped sql files will be stored in a directory of user profile, for example, `C:\Users\%Username%\.mysqlbackup`. You can change path at line 35.
 
 # Author
-[Sithu K.](http://www.phplucidframe.com/sithu)
+[Sithu](http://github.com/cithukyaw)
 
 # License
 Released under the [MIT License](LICENSE).
